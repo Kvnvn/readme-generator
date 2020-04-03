@@ -1,11 +1,9 @@
 // TODO: import fs, path and inquirer modules
 const fs = require("fs");
 const inquirer = require("inquirer");
-// const util = require("util")
-//  const writeToFile = util.promisify(fs.writeFile);
 // TODO: import api and generateMarkdown modules from ./utils/
 const api = require("./utils/api");
-// const generateMarkdown = ("utils/generateMarkdown")
+const generateMarkdown = require("./utils/generateMarkdown")
 // TODO: Add inquirer question objects to questions array. This should
 // include all the necessary questions for the user.
 // Example question:
@@ -59,15 +57,22 @@ const questions = [
 
 
 
-    
+
 
 // TODO: Write function to synchronously write data in the
 // current working directory to file named for the fileName parameter.
 // The data parameter is the text to write to the file.
-// function writeToFile(fileName, data) {
-  
+function writeToFile(fileName, data) {
 
-    
+    fs.writeFile(fileName, generateMarkdown(data), function (error) {
+        if (error) {
+            console.log(error)
+            return;
+        }
+        console.log("its a success!")
+    });
+}
+
 
 // }
 
@@ -77,13 +82,18 @@ const questions = [
 // to create the README.md file.
 function init() {
     inquirer.prompt(questions)
-    .then((userInput)=>{
-       return api.getUser(userInput.username);
-    })
-    .then((response)=>{
-    console.log(response.data)
-
-    })
-};
+        .then((userInput) => {
+            return api.getUser(userInput.username);
+        })
+        .then((response) => {
+            const markdown = generateMarkdown(response)
+            return writeToFile("outer/readme.md", markdown)
+        })
+        .catch(error => {
+            console.log(error)
+            console.log("Could not create file.");
+            process.exit(1);
+        });
+}
 
 init();
