@@ -52,7 +52,7 @@ const questions = [
         type: "input",
         name: "contributing",
         message: "What does the user need to know about contributing to the repo?"
-    },
+    }
 ];
 
 
@@ -64,7 +64,7 @@ const questions = [
 // The data parameter is the text to write to the file.
 function writeToFile(fileName, data) {
 
-    fs.writeFile(fileName, generateMarkdown(data), function (error) {
+    fs.writeFile(fileName, data, function (error) {
         if (error) {
             console.log(error)
             return;
@@ -83,17 +83,16 @@ function writeToFile(fileName, data) {
 function init() {
     inquirer.prompt(questions)
         .then((userInput) => {
-            return api.getUser(userInput.username);
+            api.getUser(userInput.username)
+            .then((response) => {
+                return writeToFile("outer/readme.md", generateMarkdown(userInput, response.data));
         })
-        .then((response) => {
-            const markdown = generateMarkdown(response)
-            return writeToFile("outer/readme.md", markdown)
-        })
+    })
         .catch(error => {
             console.log(error)
             console.log("Could not create file.");
             process.exit(1);
-        });
-}
+        })
+};
 
 init();
